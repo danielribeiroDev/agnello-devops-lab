@@ -1,0 +1,8 @@
+**/bin/
+**/obj/
+.vs/
+/.demo-security/
+*.db
+*.db-journal
+*.db-shm
+*.db-wal

@@ -1,0 +1,7 @@
+.git
+**/bin
+**/obj
+**/*.db*
+.vs
+.demo-security
+evidence

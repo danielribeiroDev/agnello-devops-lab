@@ -1,0 +1,66 @@
+name: vinheria-agnello
+
+services:
+  orders:
+    build:
+      context: .
+      dockerfile: src/Orders/Dockerfile
+    environment:
+      ConnectionStrings__Orders: Data Source=/data/orders.db
+      Inventory__BaseUrl: https://inventory:8443
+      Inventory__HttpBaseUrl: http://inventory:8080
+    ports:
+      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:8443:8443"
+    secrets:
+      - orders_tls_certificate
+      - orders_tls_password
+      - jwt_public_key
+      - demo_ca
+      - inventory_service_token
+    volumes:
+      - orders-data:/data
+    networks:
+      - demo
+
+  inventory:
+    build:
+      context: .
+      dockerfile: src/Inventory/Dockerfile
+    environment:
+      ConnectionStrings__Inventory: Data Source=/data/inventory.db
+    ports:
+      - "127.0.0.1:8081:8080"
+      - "127.0.0.1:8444:8443"
+    secrets:
+      - inventory_tls_certificate
+      - inventory_tls_password
+      - jwt_public_key
+    volumes:
+      - inventory-data:/data
+    networks:
+      - demo
+
+networks:
+  demo:
+    driver: bridge
+
+volumes:
+  orders-data:
+  inventory-data:
+
+secrets:
+  orders_tls_certificate:
+    file: ./.demo-security/orders.pfx
+  orders_tls_password:
+    file: ./.demo-security/orders-password.txt
+  inventory_tls_certificate:
+    file: ./.demo-security/inventory.pfx
+  inventory_tls_password:
+    file: ./.demo-security/inventory-password.txt
+  jwt_public_key:
+    file: ./.demo-security/jwt-public.pem
+  demo_ca:
+    file: ./.demo-security/ca.pem
+  inventory_service_token:
+    file: ./.demo-security/inventory.jwt

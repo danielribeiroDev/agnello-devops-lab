@@ -1,0 +1,43 @@
+name: Build and publish
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build services
+        run: |
+          dotnet build src/Orders/Orders.csproj -c Release
+          dotnet build src/Inventory/Inventory.csproj -c Release
+
+      - name: Publish to deployment folders
+        run: |
+          dotnet publish src/Orders/Orders.csproj -c Release --no-build -o deploy/orders
+          dotnet publish src/Inventory/Inventory.csproj -c Release --no-build -o deploy/inventory
+          test -f deploy/orders/Orders.dll
+          test -f deploy/inventory/Inventory.dll
+
+      - name: Upload deployment artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: vinheria-deploy
+          path: deploy/
+          if-no-files-found: error
